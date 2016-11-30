@@ -1,0 +1,203 @@
+Go for Programmers
+The External World
+
+Marty Schoch
+Search Person, Couchbase
+marty@couchbase.com
+http://blevesearch.com/
+@mschoch
+@blevesearch
+
+* Files
+
+* Read Entire File
+
+.play file/readfile.go /START OMIT/,/END OMIT/
+
+Convenient, but you should almost never do this.
+
+* Open/Read File
+
+.play file/openread.go /START OMIT/,/END OMIT/
+
+* Buffered Reading
+
+.play file/readbuffered.go /START OMIT/,/END OMIT/
+
+* Closing
+
+.play file/openreadclose.go /START OMIT/,/END OMIT/
+
+Always remember to Close()
+
+Using defer after call to Open() is a best practice.
+
+Any problems?
+
+* Close returns error
+
+.play file/openreadcloseerr.go /START OMIT/,/END OMIT/
+
+* Interfaces
+
+.code file/interfaces.go /START READOMIT/,/END READOMIT/
+
+os.File implements io.Reader
+
+Writing a method that works with io.Reader is more general than one that requires os.File
+
+For example, bufio.New takes an io.Reader, and the bufio.Reader is also an io.Reader
+
+Prefer Reader over ReadCloser when possible, it becomes self-documenting.  Does this function close the Reader?  No, if the argument is Reader it cannot.
+
+* Real World
+
+* Read List of Go Proverbs
+
+.code goproverbsd/proverbs.go /START OMIT/,/END OMIT/
+
+* Read List of Go Proverbs
+
+.code goproverbsd/main.go /START 1OMIT/,/END 1OMIT/
+
+* Back to Files...
+
+* Write Entire File
+
+.play file/writefile.go /START OMIT/,/END OMIT/
+
+Again, convenient, but you should almost never do this.
+
+* Create/Write File
+
+.play file/createwritecloseerr.go /START OMIT/,/END OMIT/
+
+* Sync
+
+.play file/createwritesynccloseerr.go /START OMIT/,/END OMIT/
+
+* Write Buffering/Flushing
+
+.play file/writebuffered.go /START OMIT/,/END OMIT/
+
+* Using interfaces
+
+.code file/interfaces.go /START WRITEOMIT/,/END WRITEOMIT/
+
+* JSON
+
+* Unmarshal Unknown JSON
+
+.play json/unmarshal_unknown.go /START OMIT/,/END OMIT/
+
+* Unmarshal Known JSON
+
+.play json/unmarshal_known.go /START OMIT/,/END OMIT/
+
+* Unmarshal JSON File
+
+.play json/unmarshal_file.go /START OMIT/,/END OMIT/
+
+* Decode JSON Reader
+
+.play json/decode_reader.go /START OMIT/,/END OMIT/
+
+* Marshal JSON File
+
+.play json/marshal_file.go /START OMIT/,/END OMIT/
+
+* Encode JSON Writer
+
+.play json/encode_writer.go /START OMIT/,/END OMIT/
+
+* Back to the Real World
+
+* JSON Request/Response Structures
+
+.code goproverbsd/request.go
+
+* Network
+
+* TCP Server
+
+.play net/listen_accept.go /START OMIT/,/END OMIT/
+
+* TCP Client
+
+.play net/dial.go /START OMIT/,/END OMIT/
+
+* HTTP
+
+* HTTP Server
+
+.play net/http_listenandserve.go /START OMIT/,/END OMIT/
+
+* HTTP Client
+
+.play net/http_get.go /START OMIT/,/END OMIT/
+
+* HTTP Handler Interface
+
+.code net/http_handler_interface.go /START OMIT/,/END OMIT/
+
+* HTTP Handler Interface
+
+.play net/http_handler_message.go /START OMIT/,/END OMIT/
+
+* HTTP Client
+
+.play net/http_get_message.go /START OMIT/,/END OMIT/
+
+* HTTP HandlerFunc
+
+.code net/http_handlerfunc.go /START OMIT/,/END OMIT/
+
+Any interface with 1 method, can have function type which invokes itself.
+
+Now any method with the right signature can be Handler with the HandlerFunc(x) conversion.
+
+* HTTP Handler Chaining
+
+Functions following this signatures can become wrappers:
+
+    func(http.Handler) http.Handler
+
+Logging example:
+
+.code net/http_handler_chain.go /START OMIT/,/END OMIT/
+
+* HTTP Message Handler With Logging
+
+.play net/http_handler_message_log.go /START OMIT/,/END OMIT/
+
+* HTTP Client
+
+.play net/http_get_message_log.go /START OMIT/,/END OMIT/
+
+* Back to the Real World
+
+* HTTP Handler to Return Proverb
+
+.code goproverbsd/handler.go /START OMIT/,/END OMIT/
+
+* Run Go Proverb Daemon
+
+.code goproverbsd/main.go /START 1OMIT/,/END 2OMIT/
+
+Launch this outside present...
+
+* Try the Go Proverb Daemon
+
+.play goproverbsd/client.go /START OMIT/,/END OMIT/
+
+* Exercsises
+
+- Use the "flags" package to make path to proverbs file configurable
+- Add a config file to configure a timeout
+- Use http.TimeoutHandler to timeout requests
+
+* Finding More Packages
+
+https://godoc.org/
+
+https://github.com/avelino/awesome-go
