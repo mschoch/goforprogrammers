@@ -1,0 +1,401 @@
+Go for Programmers
+Syntax and Structure
+
+
+Ryan Day
+Cloud Engineering Officer, Wireless Registry
+
+* Development Environment
+
+* IDEs
+
+There is no official IDE. Popular IDEs include:
+
+- Atom (go-plus)
+- VIM (vim-go)
+- Sublime Text (GoSublime)
+
+IDEs vary in support of functionality. Getting used to the command line
+is recommended.
+
+.link https://github.com/golang/go/wiki/IDEsAndTextEditorPlugins List of IDEs
+
+* Project layout
+
+A standard project layout:
+
+	bin/
+	    hello
+	pkg/
+	    linux_amd64/
+	        github.com/golang/example/
+	            stringutil.a
+	src/
+		/cmd
+                    /class
+		        main.go
+	        /greetings
+	            hello.go
+	    github.com/golang/example/
+	            .git/
+	    golang.org/x/image/
+	        .git/
+
+* Creating a project
+
+When starting your project, you should create a new directory in which you will
+place all your code and dependencies. For this class, we will be using the
+directory *$HOME/goclass*. Of all the directories listed above, we only need
+to create one right now. The Go toolset does the rest.
+
+	mkdir -p $HOME/goclass/src/class/greetings
+	mkdir -p $HOME/goclass/src/class/cmd
+
+* Creating a project
+
+Inside the *$HOME/goclass/src/class/cmd* directory, create the following file:
+
+	// main.go
+	package main
+
+	import (
+	    "fmt"
+	    "class/greetings"
+	)
+
+	func main() {
+	    fmt.Println(greetings.Hello())
+	}
+
+* Creating a project
+
+And inside the *$HOME/goclass/src/class/greetings* directory, create the following
+file:
+
+	// greetings/hello.go
+	package greetings
+
+	func Hello() string {
+	    return "Hello world"
+	}
+
+* Creating your environment
+
+Now we have our project setup like we want. But how does the compiler actually
+know where to find our files? It uses the *$GOPATH* environment variable. This
+variable should point to the directory that contains our project layout. In this
+case the directory is *$HOME/goclass*.
+
+	export GOPATH=$HOME/goclass
+
+After we build our project, we should have a binary that we can run. But we need
+to specify where that binary should be saved. The standard way of doing this is
+with the *$GOBIN* environment variable.
+
+	export GOBIN=$GOPATH/bin
+
+* Building your project
+
+With *$GOPATH* and *$GOBIN* set, it's time to build our test project. Run the
+following:
+
+	go install class/cmd/show_greeting
+
+This should compile fine and leave you with a binary you can run.
+
+	$GOBIN/show_greeting
+
+* Variables types
+
+	bool
+
+	string
+
+	int  int8  int16  int32  int64
+	uint uint8 uint16 uint32 uint64 uintptr
+
+	byte // alias for uint8
+
+	rune // alias for int32
+	     // represents a Unicode code point
+
+	float32 float64
+
+	complex64 complex128
+
+* Variables zero values
+
+All variables have a zero value.
+
+	"" string
+	0 numeric
+	nil pointer
+	false bool
+
+* Variables creation
+
+There are many ways to create variables.
+
+	var a int           // 0
+	a = 1               // 1
+	b := 0              // 0
+
+	var t MyType        //  MyType
+	p := new(MyType)    // *MyType
+	q := &MyType{}      // *MyType
+	var x *MyType       // nil pointer to MyType
+
+* Type conversion
+
+Type conversions must be done explicitly. Although the initial declaration of a
+variable doesn't need a type identifier, and further assignments must have the
+same type.
+
+	var i int = 42
+	var f float64 = float64(i)
+	var u uint = uint(f)
+
+Although conversions are done explicitly, you still have to watch what you're
+doing.
+
+	func main() {
+		valueOne := 383
+		valueTwo := uint8(valueOne)
+
+		if valueTwo > 255 {
+			fmt.Println("Value too big!")
+		}
+	}
+
+* Type assertion
+
+Type assertion is done when an interface needs to become an explicit type. Type
+assertion can be done in a couple different ways.
+
+	var value interface{} // Value provided by caller.
+
+	switch str := value.(type) {
+	case string:
+	    return str
+	case Stringer:
+	    return str.String()
+	}
+
+	// ...
+
+	val, ok := value.(ExpectedType)
+	if !ok { ... }
+
+* Type assertion
+
+	val, ok := value.(ExpectedType)
+	if !ok { ... }
+
+This can leave your code with a lot of type assertions with checks
+for correctness. Don't let this extra branch fool you into skipping
+the check.
+
+	BenchmarkWithoutAssert-8              	 3000000	       422 ns/op
+	BenchmarkWithAssert-8                 	 3000000	       457 ns/op
+	BenchmarkValuesAssertWithoutCheck-8   	 3000000	       459 ns/op
+
+* Functions
+
+- Functions can return multiple values.
+- Functions can take variable arguments.
+
+	func fn(ints ...int) (int, error) {
+		var aggregate int
+
+		for _, i := range ints {
+			aggregate += i
+		}
+
+		return aggregate, nils
+	}
+
+* Closures
+
+	func applyTaxFn(rate float64) func(float64) float64 {
+		return func(price float64) float64 {
+			return (price * rate) + price
+		}
+	}
+
+* Arrays and slices
+
+Arrays are not really used. They are heavy to work with because all values are
+copied when an array is passed to a function.
+
+	func asArray(arr [3]int) {
+		arr[1] = 100
+	}
+
+	func asSlice(arr []int) {
+		arr[1] = 200
+	}
+
+	func main() {
+		arr := [3]int{1, 2, 3}
+		asArray(arr)
+		fmt.Println(arr)	// [1 2 3]
+		asSlice(arr[:])
+		fmt.Println(arr)	// [1 200 3]
+	}
+
+* Arrays and slices
+
+Slices are be preallocated in two different ways. You can reserved zerod memory
+and use indexing to populate values. Or you can allocate a known amount and append
+to the slice as you grow it.
+
+	zerodArr := make([]int, 100)    // Allocate zerod array of size 100
+	zerodArr := append(zerodArr, 1) // slice == [0, 0, 0, ..., 1]
+
+	allocArr := make([]int, 0, 100) // Allocate array of size 100
+	allocArr := append(allocArr, 1) // slice == [1]
+
+* Slice performance
+
+	func appending() {
+		arr := make([]int, 0, 100000)
+
+		for i := 0; i < 100000; i++ {
+			arr = append(arr, i)
+		}
+	}
+
+	// ~28% speed improvement
+	func indexing() {
+		arr := make([]int, 100000)
+
+		for i := 0; i < 100000; i++ {
+			arr[i] = i
+		}
+	}
+
+* Loops
+
+There is no *while* loop, only a *for* loop with no conditions
+
+	for {
+		...
+	}
+
+*for* loops are similar to C
+
+	for i := 0; i < 10; i++ {
+		...
+	}
+
+* Ranging
+
+You can range over an array
+
+	var items []string
+
+	for index, value := range items {
+		...
+	}
+
+You can also range over maps
+
+	myMap := make(map[string]int)
+
+	for key, value := range myMap {
+		...
+	}
+
+* Strings and UTF8
+
+A byte is a byte. A rune is a codepoint.
+
+	func main() {
+		sentence := "hello 你好"
+	
+		for _, l := range sentence {
+			fmt.Printf("%T %v\n", l, l)
+		}
+	
+		fmt.Printf("%T %v\n", sentence[9], sentence[9])
+		fmt.Println(len(sentence))
+		fmt.Println(len([]rune(sentence)))
+	}
+
+* Interfaces
+
+An interface is a collection of method signatures.
+
+	type Manager interface {
+		CircleBack() bool
+		HardStop(time.Duration)
+	}
+
+* Interfaces
+
+An interface can be composed of other interfaces
+
+	type Reader interface {
+		Read(p []byte) (n int, err error)
+	}
+
+	type Writer interface {
+		Write(p []byte) (n int, err error)
+	}
+
+	type ReaderWriter interface {
+		Reader
+		Writer
+	}
+
+* Interfaces
+
+Interfaces help abstract your code.
+
+	func ParseCustomerRecord(fileName string) *CustomerRecord {
+		var customer CustomerRecord
+
+		f, _ := os.Open(fileName)
+		data, _ := ioutil.ReadAll(f)
+		parsed, _ := json.Unmarshal(data, &customer)
+
+		return &customer
+	}
+
+* Interfaces
+
+A small rewrite will let this one function parse from a file, a network connection, a buffer, or any other reader.
+
+	func ParseCustomerRecord(source io.Reader) *CustomerRecord {
+		var customer CustomerRecord
+
+		dec := json.NewDecoder(source)
+		_ = dec.Decode(&customer)
+
+		return &customer
+	}
+
+* Testing
+
+Testing is very easy using Go.
+
+	func ListExpiredUsers(dbh *db.Conn, t *testing.T) {
+		// ...
+	}
+
+	func UserTransactions(dbh *db.Conn, t *testing.T) {
+		// ...
+	}
+
+	func TestDatabaseFunctions(t *testing.T) {
+		dbh := db.GetConnection()
+		populateDb(dbh)
+
+		t.Run("ListExpiredUsers", func(t *testing.T) { ListExpiredUsers(dbh, t) })
+		t.Run("UserTransactions", func(t *testing.T) { UserTransactions(dbh, t) })
+	}
+
+* Links
+
+- https://golang.org/doc/code.html
+- https://golang.org/doc/effective_go.html
