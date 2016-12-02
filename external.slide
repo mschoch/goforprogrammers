@@ -8,25 +8,39 @@ http://blevesearch.com/
 @mschoch
 @blevesearch
 
+* Overview
+
+Topics
+
+- Files
+- JSON
+- Network
+- HTTP
+
+Application
+
+- goproverbsd - An HTTP/JSON service to return Go Proverbs
+
+
 * Files
 
 * Read Entire File
 
-.play file/readfile.go /START OMIT/,/END OMIT/
+.play -numbers file/readfile.go /START OMIT/,/END OMIT/
 
 Convenient, but you should almost never do this.
 
 * Open/Read File
 
-.play file/openread.go /START OMIT/,/END OMIT/
+.play -numbers file/openread.go /START OMIT/,/END OMIT/
 
 * Buffered Reading
 
-.play file/readbuffered.go /START OMIT/,/END OMIT/
+.play -numbers file/readbuffered.go /START OMIT/,/END OMIT/
 
 * Closing
 
-.play file/openreadclose.go /START OMIT/,/END OMIT/
+.play -numbers file/openreadclose.go /START OMIT/,/END OMIT/
 
 Always remember to Close()
 
@@ -36,7 +50,7 @@ Any problems?
 
 * Close returns error
 
-.play file/openreadcloseerr.go /START OMIT/,/END OMIT/
+.play -numbers file/openreadcloseerr.go /START OMIT/,/END OMIT/
 
 * Interfaces
 
@@ -48,109 +62,142 @@ Writing a method that works with io.Reader is more general than one that require
 
 For example, bufio.New takes an io.Reader, and the bufio.Reader is also an io.Reader
 
-Prefer Reader over ReadCloser when possible, it becomes self-documenting.  Does this function close the Reader?  No, if the argument is Reader it cannot.
+* Which Interface?
+
+Does this function close the file?
+
+  func LoadConfig(r ReadCloser) error
+
+It might, but this one cannot.
+
+  func LoadConfig(r Reader) error
+
+By choosing the strictest interface you need, your code helps document itself.
 
 * Real World
 
 * Read List of Go Proverbs
 
-.code goproverbsd/proverbs.go /START OMIT/,/END OMIT/
+.code -numbers goproverbsd/proverbs.go /START OMIT/,/END OMIT/
 
 * Read List of Go Proverbs
 
-.code goproverbsd/main.go /START 1OMIT/,/END 1OMIT/
+.code -numbers goproverbsd/main.go /START 1OMIT/,/END 1OMIT/
 
 * Back to Files...
 
 * Write Entire File
 
-.play file/writefile.go /START OMIT/,/END OMIT/
+.play -numbers file/writefile.go /START OMIT/,/END OMIT/
 
 Again, convenient, but you should almost never do this.
 
 * Create/Write File
 
-.play file/createwritecloseerr.go /START OMIT/,/END OMIT/
+.play -numbers file/createwritecloseerr.go /START OMIT/,/END OMIT/
 
 * Sync
 
-.play file/createwritesynccloseerr.go /START OMIT/,/END OMIT/
+.play -numbers file/createwritesynccloseerr.go /START OMIT/,/END OMIT/
 
 * Write Buffering/Flushing
 
-.play file/writebuffered.go /START OMIT/,/END OMIT/
+.play -numbers file/writebuffered.go /START OMIT/,/END OMIT/
 
 * Using interfaces
 
 .code file/interfaces.go /START WRITEOMIT/,/END WRITEOMIT/
 
+* Doing More With Files
+
+More functions in the [[https://golang.org/pkg/os/][os]] package:
+
+- Open readonly/append modes
+- Create with permissions
+- Seeking in file
+- Working with Directories
+
+Traversing directories with [[https://golang.org/pkg/path/filepath/][filepath]] package:
+
+- filepath.Walk(...)
+
 * JSON
 
 * Unmarshal Unknown JSON
 
-.play json/unmarshal_unknown.go /START OMIT/,/END OMIT/
+.play -numbers json/unmarshal_unknown.go /START OMIT/,/END OMIT/
 
 * Unmarshal Known JSON
 
-.play json/unmarshal_known.go /START OMIT/,/END OMIT/
+.play -numbers json/unmarshal_known.go /START OMIT/,/END OMIT/
 
 * Unmarshal JSON File
 
-.play json/unmarshal_file.go /START OMIT/,/END OMIT/
+.play -numbers json/unmarshal_file.go /START OMIT/,/END OMIT/
 
 * Decode JSON Reader
 
-.play json/decode_reader.go /START OMIT/,/END OMIT/
+.play -numbers json/decode_reader.go /START OMIT/,/END OMIT/
 
 * Marshal JSON File
 
-.play json/marshal_file.go /START OMIT/,/END OMIT/
+.play -numbers json/marshal_file.go /START OMIT/,/END OMIT/
 
 * Encode JSON Writer
 
-.play json/encode_writer.go /START OMIT/,/END OMIT/
+.play -numbers json/encode_writer.go /START OMIT/,/END OMIT/
 
 * Back to the Real World
 
 * JSON Request/Response Structures
 
-.code goproverbsd/request.go
+.code -numbers goproverbsd/request.go
+
+* Going further with Encodings
+
+Faster (de)serialization for known structures using [[https://github.com/pquerna/ffjson][ffjson]].
+
+Binary serializations:
+
+- [[https://github.com/golang/protobuf][protobuf]]
+- Faster protobufs with [[https://github.com/gogo/protobuf][gogo protobuf]]
+- [[https://github.com/zombiezen/go-capnproto2][capnproto]]
 
 * Network
 
 * TCP Server
 
-.play net/listen_accept.go /START OMIT/,/END OMIT/
+.play -numbers net/listen_accept.go /START OMIT/,/END OMIT/
 
 * TCP Client
 
-.play net/dial.go /START OMIT/,/END OMIT/
+.play -numbers net/dial.go /START OMIT/,/END OMIT/
 
 * HTTP
 
 * HTTP Server
 
-.play net/http_listenandserve.go /START OMIT/,/END OMIT/
+.play -numbers net/http_listenandserve.go /START OMIT/,/END OMIT/
 
 * HTTP Client
 
-.play net/http_get.go /START OMIT/,/END OMIT/
+.play -numbers net/http_get.go /START OMIT/,/END OMIT/
 
 * HTTP Handler Interface
 
-.code net/http_handler_interface.go /START OMIT/,/END OMIT/
+.code -numbers net/http_handler_interface.go /START OMIT/,/END OMIT/
 
 * HTTP Handler Interface
 
-.play net/http_handler_message.go /START OMIT/,/END OMIT/
+.play -numbers net/http_handler_message.go /START OMIT/,/END OMIT/
 
 * HTTP Client
 
-.play net/http_get_message.go /START OMIT/,/END OMIT/
+.play -numbers net/http_get_message.go /START OMIT/,/END OMIT/
 
 * HTTP HandlerFunc
 
-.code net/http_handlerfunc.go /START OMIT/,/END OMIT/
+.code -numbers net/http_handlerfunc.go /START OMIT/,/END OMIT/
 
 Any interface with 1 method, can have function type which invokes itself.
 
@@ -164,31 +211,31 @@ Functions following this signatures can become wrappers:
 
 Logging example:
 
-.code net/http_handler_chain.go /START OMIT/,/END OMIT/
+.code -numbers net/http_handler_chain.go /START OMIT/,/END OMIT/
 
 * HTTP Message Handler With Logging
 
-.play net/http_handler_message_log.go /START OMIT/,/END OMIT/
+.play -numbers net/http_handler_message_log.go /START OMIT/,/END OMIT/
 
 * HTTP Client
 
-.play net/http_get_message_log.go /START OMIT/,/END OMIT/
+.play -numbers net/http_get_message_log.go /START OMIT/,/END OMIT/
 
 * Back to the Real World
 
 * HTTP Handler to Return Proverb
 
-.code goproverbsd/handler.go /START OMIT/,/END OMIT/
+.code -numbers goproverbsd/handler.go /START OMIT/,/END OMIT/
 
 * Run Go Proverb Daemon
 
-.code goproverbsd/main.go /START 1OMIT/,/END 2OMIT/
+.code -numbers goproverbsd/main.go /START 1OMIT/,/END 2OMIT/
 
 Launch this outside present...
 
 * Try the Go Proverb Daemon
 
-.play goproverbsd/client.go /START OMIT/,/END OMIT/
+.play -numbers goproverbsd/client.go /START OMIT/,/END OMIT/
 
 * Exercsises
 
