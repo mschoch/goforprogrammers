@@ -79,12 +79,8 @@ subdirectory. So `greetings` is imported as follows:
 * Import paths
 
 To import a package from github, you first run `go get github.com/golang/example`.
-Then you would place the following in your source file:
-
-	import "github.com/golang/example"
-
-That package will be cached. If we look at our $GOPATH layout again, we can see
-the difference:
+`go get` will interpret `github.com/golang/example` as a URL. That URL will be
+fetched and placed inside your `src/` directory.
 
 	src/
 		cmd/
@@ -96,6 +92,11 @@ the difference:
 			golang/
 				example/
 					example.go
+
+Just like any other package, you can import `github.com/golang/example` relative to
+your `src/` directory.
+
+	import "github.com/golang/example"
 
 * Creating a project
 
@@ -195,21 +196,6 @@ This should compile fine and leave you with a binary you can run.
 
 	type NumberList []int
 
-* Variables zero values
-
-All variables have a zero value.
-
-	var s string    // s == ""
-	var i int       // i == 0
-	var p *string   // p == nil
-	var b bool      // b == false
-
-Use this to your advantage.
-
-	type A struct {
-		IsEnabled bool
-	}
-
 * Variable creation
 
 There are many ways to create variables.
@@ -227,6 +213,21 @@ There are many ways to create variables.
 	arr := make([]int, size, capacity)
 	m := make(map[string]int)
 
+* Variables zero values
+
+All variables have a zero value.
+
+	var s string    // s == ""
+	var i int       // i == 0
+	var p *string   // p == nil
+	var b bool      // b == false
+
+Use this to your advantage.
+
+	type A struct {
+		IsEnabled bool
+	}
+
 * Type conversion
 
 Type conversions must be done explicitly. Although the initial declaration of a
@@ -237,6 +238,10 @@ same type.
 	var f float64 = float64(i)
 	var u uint = uint(f)
 
+	type ProperName string
+	name := "Ryan"
+	pName := ProperName(name)
+	
 Although conversions are done explicitly, you still have to watch what you're
 doing.
 
@@ -281,81 +286,6 @@ the check.
 	BenchmarkWithAssert-8                 	 3000000	       457 ns/op
 	BenchmarkValuesAssertWithoutCheck-8   	 3000000	       459 ns/op
 
-* Functions
-
-- Functions can return multiple values.
-- Functions can take variable arguments.
-
-	func fn(ints ...int) (int, error) {
-		var aggregate int
-
-		for _, i := range ints {
-			aggregate += i
-		}
-
-		return aggregate, nil
-	}
-
-* Closures
-
-	func applyTaxFn(rate float64) func(float64) float64 {
-		return func(price float64) float64 {
-			return (price * rate) + price
-		}
-	}
-
-* Arrays and slices
-
-Arrays are not really used. They are heavy to work with because all values are
-copied when an array is passed to a function.
-
-	func asArray(arr [3]int) {
-		arr[1] = 100
-	}
-
-	func asSlice(arr []int) {
-		arr[1] = 200
-	}
-
-	func main() {
-		arr := [3]int{1, 2, 3}
-		asArray(arr)
-		fmt.Println(arr)	// [1 2 3]
-		asSlice(arr[:])
-		fmt.Println(arr)	// [1 200 3]
-	}
-
-* Arrays and slices
-
-Slices can be allocated in two different ways. You can reserved zerod memory
-and use indexing to populate values. Or you can allocate a known amount and append
-to the slice as you grow it.
-
-	zerodArr := make([]int, 100)    // Allocate zerod array of size 100
-	zerodArr := append(zerodArr, 1) // slice == [0, 0, 0, ..., 1]
-
-	allocArr := make([]int, 0, 100) // Allocate array of size 100
-	allocArr := append(allocArr, 1) // slice == [1]
-
-* Slice performance
-
-	func appending() {
-		arr := make([]int, 0, 100000)
-
-		for i := 0; i < 100000; i++ {
-			arr = append(arr, i)
-		}
-	}
-
-	// ~28% speed improvement
-	func indexing() {
-		arr := make([]int, 100000)
-
-		for i := 0; i < 100000; i++ {
-			arr[i] = i
-		}
-	}
-
 * Loops
 
 There is no *while* loop, only a *for* loop with no conditions
@@ -388,6 +318,60 @@ You can also range over maps
 		...
 	}
 
+* Arrays and Slices
+
+* Arrays and slices
+
+Arrays are not really used. They are heavy to work with because all values are
+copied when an array is passed to a function.
+
+	func asArray(arr [3]int) {
+		arr[1] = 100
+	}
+
+	func asSlice(arr []int) {
+		arr[1] = 200
+	}
+
+	func main() {
+		arr := [3]int{1, 2, 3}
+		asArray(arr)
+		fmt.Println(arr)	// [1 2 3]
+		asSlice(arr[:])
+		fmt.Println(arr)	// [1 200 3]
+	}
+
+* Arrays and slices
+
+Slices can be allocated in two different ways. You can reserve zeroed memory
+and use indexing to populate values. Or you can allocate a known amount and append
+to the slice as you grow it.
+
+	zerodArr := make([]int, 100)    // Allocate zerod array of size 100
+	zerodArr := append(zerodArr, 1) // slice == [0, 0, 0, ..., 1]
+
+	allocArr := make([]int, 0, 100) // Allocate array of size 100
+	allocArr := append(allocArr, 1) // slice == [1]
+
+* Slice performance
+
+	func appending() {
+		arr := make([]int, 0, 100000)
+
+		for i := 0; i < 100000; i++ {
+			arr = append(arr, i)
+		}
+	}
+
+	// ~28% speed improvement
+	func indexing() {
+		arr := make([]int, 100000)
+
+		for i := 0; i < 100000; i++ {
+			arr[i] = i
+		}
+	}
+
 * Strings and UTF8
 
 A byte is a byte. A rune is a codepoint.
@@ -402,6 +386,50 @@ A byte is a byte. A rune is a codepoint.
 		fmt.Printf("%T %v\n", sentence[9], sentence[9])
 		fmt.Println(len(sentence))
 		fmt.Println(len([]rune(sentence)))
+	}
+
+* Functions
+
+* Functions
+
+- Functions can return multiple values.
+- Functions can take variable arguments.
+
+	func fn(ints ...int) (int, error) {
+		var aggregate int
+
+		for _, i := range ints {
+			aggregate += i
+		}
+
+		return aggregate, nil
+	}
+
+* Functions
+
+Typical function returning a pointer and error value.
+
+	func SomeFn(v int) (*SomeType, error) {
+		if v < 0 {
+			return nil, ErrBadValue
+		}
+
+		return &SomeType{}, nil
+	}
+
+* Functions
+
+You can use closures. This is a typical pattern in web applications.
+
+	func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			m := validPath.FindStringSubmatch(r.URL.Path)
+			if m == nil {
+				http.NotFound(w, r)
+				return
+			}
+			fn(w, r, m[2])
+		}
 	}
 
 * Interfaces
@@ -473,7 +501,14 @@ A small rewrite will let this one function parse from a file, a network connecti
 
 * Testing
 
-Testing is very easy using Go. 
+Testing is very easy using Go.
+
+	// somefile_test.go
+	func TestXxx(*testing.T) {}
+
+*_test.go files are not included in the normal build.
+
+* Testing
 
 	func ListExpiredUsers(dbh *db.Conn, t *testing.T) {
 		// ...
@@ -489,6 +524,59 @@ Testing is very easy using Go.
 
 		t.Run("ListExpiredUsers", func(t *testing.T) { ListExpiredUsers(dbh, t) })
 		t.Run("UserTransactions", func(t *testing.T) { UserTransactions(dbh, t) })
+	}
+
+* Testing
+
+How do we test this function?
+
+	func ParseCustomerRecord(fileName string) (*CustomerRecord, error) {
+	    var customer CustomerRecord
+	
+	    f, err := os.Open(fileName)
+	    if err != nil {
+	        return nil, err
+	    }
+
+	    data, err := ioutil.ReadAll(f)
+	    if err != nil {
+	        return nil, err
+	    }
+
+	    parsed, err := json.Unmarshal(data, &customer)
+	    if err != nil {
+	        return nil, err
+	    }
+	
+	    return &customer, nil
+	}
+
+* Testing
+
+What about now?
+
+	func ParseCustomerRecord(source io.Reader) (*CustomerRecord, error) {
+	    var customer CustomerRecord
+	
+	    dec := json.NewDecoder(source)
+	    err := dec.Decode(&customer)
+	    if err != nil {
+	        return nil, err
+	    }
+
+	    return &customer, nil
+	}
+
+* Testing
+
+	func TestParseCustomer(t *testing.T) {
+		raw := []bytes(`{"name": "Srdjan", "sanity": "wanting"}`)
+
+		rdr := bytes.NewReader(raw)
+		rec, err := ParseCustomerRecord(rdr)
+		if err != nil {
+			t.Fatal()
+		}
 	}
 
 * Benchmarks
