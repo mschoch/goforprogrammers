@@ -31,15 +31,71 @@ A standard project layout:
 	        github.com/golang/example/
 	            stringutil.a
 	src/
-		/cmd
-                    /class
-		        main.go
-	        /greetings
-	            hello.go
-	    github.com/golang/example/
-	            .git/
-	    golang.org/x/image/
-	        .git/
+		cmd/
+			class/
+				main.go
+		greetings/
+			hello.go
+		github.com/golang/example/
+			.git/
+		golang.org/x/image/
+			.git/
+
+* Environment Layout
+
+	src/
+		cmd/
+			class/
+				main.go
+		greetings/
+			hello.go
+
+$GOPATH - Parent directory of your project. src/, bin/, pkg/ are subdirectories
+$GOBIN - Usually points to the bin/ directory under $GOPATH
+
+Packages are imported from your $GOPATH/src directory
+
+* Import paths
+
+Import paths are strings that uniquely identifies a package. Importing a package
+from the standard library is simple:
+
+	import "net/http"
+
+You can import from other packages in your $GOPATH:
+
+	import "greetings"
+
+Remember, $GOPATH is your root directory and packages are imported from the `src/`
+subdirectory. So `greetings` is imported as follows:
+
+	src/
+		cmd/
+			class/
+				main.go
+		greetings/
+			hello.go
+
+* Import paths
+
+To import a package from github, you first run `go get github.com/golang/example`.
+Then you would place the following in your source file:
+
+	import "github.com/golang/example"
+
+That package will be cached. If we look at our $GOPATH layout again, we can see
+the difference:
+
+	src/
+		cmd/
+			class/
+				main.go
+		greetings/
+			hello.go
+		github.com/
+			golang/
+				example/
+					example.go
 
 * Creating a project
 
@@ -49,13 +105,13 @@ directory *$HOME/goclass*. Of all the directories listed above, we only need
 to create one right now. The Go toolset does the rest.
 
 	mkdir -p $HOME/goclass/src/class/greetings
-	mkdir -p $HOME/goclass/src/class/cmd
+	mkdir -p $HOME/goclass/src/class/cmd/show_greeting
 
 * Creating a project
 
 Inside the *$HOME/goclass/src/class/cmd* directory, create the following file:
 
-	// main.go
+	// class/cmd/show_greeting/main.go
 	package main
 
 	import (
@@ -72,7 +128,7 @@ Inside the *$HOME/goclass/src/class/cmd* directory, create the following file:
 And inside the *$HOME/goclass/src/class/greetings* directory, create the following
 file:
 
-	// greetings/hello.go
+	// class/greetings/hello.go
 	package greetings
 
 	func Hello() string {
@@ -105,7 +161,9 @@ This should compile fine and leave you with a binary you can run.
 
 	$GOBIN/show_greeting
 
-* Variables types
+* Variables
+
+* Basic types
 
 	bool
 
@@ -123,27 +181,51 @@ This should compile fine and leave you with a binary you can run.
 
 	complex64 complex128
 
+* Basic collections
+
+	map[string]int
+	[]int
+	map[int][]string
+
+* Custom types
+
+	type MyType struct {
+		Value int
+	}
+
+	type NumberList []int
+
 * Variables zero values
 
 All variables have a zero value.
 
-	"" string
-	0 numeric
-	nil pointer
-	false bool
+	var s string    // s == ""
+	var i int       // i == 0
+	var p *string   // p == nil
+	var b bool      // b == false
 
-* Variables creation
+Use this to your advantage.
+
+	type A struct {
+		IsEnabled bool
+	}
+
+* Variable creation
 
 There are many ways to create variables.
 
 	var a int           // 0
-	a = 1               // 1
 	b := 0              // 0
+	a = 1               // 1
+	c = 1               // Error, c is undefined
 
 	var t MyType        //  MyType
 	p := new(MyType)    // *MyType
 	q := &MyType{}      // *MyType
 	var x *MyType       // nil pointer to MyType
+
+	arr := make([]int, size, capacity)
+	m := make(map[string]int)
 
 * Type conversion
 
@@ -211,7 +293,7 @@ the check.
 			aggregate += i
 		}
 
-		return aggregate, nils
+		return aggregate, nil
 	}
 
 * Closures
@@ -245,7 +327,7 @@ copied when an array is passed to a function.
 
 * Arrays and slices
 
-Slices are be preallocated in two different ways. You can reserved zerod memory
+Slices can be allocated in two different ways. You can reserved zerod memory
 and use indexing to populate values. Or you can allocate a known amount and append
 to the slice as you grow it.
 
@@ -331,6 +413,18 @@ An interface is a collection of method signatures.
 		HardStop(time.Duration)
 	}
 
+Any type that has the functions an interface requires
+can act as that interface.
+
+	type SomeStruct struct {}
+
+	func (s *SomeStruct) CircleBack() bool {
+		return false
+	}
+
+	func (s *SomeStruct) HardStop(t time.Duration) {
+	}
+
 * Interfaces
 
 An interface can be composed of other interfaces
@@ -377,7 +471,9 @@ A small rewrite will let this one function parse from a file, a network connecti
 
 * Testing
 
-Testing is very easy using Go.
+* Testing
+
+Testing is very easy using Go. 
 
 	func ListExpiredUsers(dbh *db.Conn, t *testing.T) {
 		// ...
@@ -395,7 +491,35 @@ Testing is very easy using Go.
 		t.Run("UserTransactions", func(t *testing.T) { UserTransactions(dbh, t) })
 	}
 
+* Benchmarks
+
+	func concatString(a, b, c string, d, e, f int) string {
+		return a + b + c + strconv.Itoa(d) + strconv.Itoa(e) + strconv.Itoa(f)
+	}
+
+	func fmtString(a, b, c string, d, e, f int) string {
+		return fmt.Sprintf("%s %s %s %d %d %d", a, b, c, d, e, f)
+	}
+
+	func BenchmarkConcatString(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			concatString("a", "b", "c", 1, 2, 3)
+		}
+
+		b.ReportAllocs()
+	}
+
+	func BenchmarkFmtString(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			fmtString("a", "b", "c", 1, 2, 3)
+		}
+
+		b.ReportAllocs()
+	}
+
+
 * Links
 
+- https://tour.golang.org/welcome/1
 - https://golang.org/doc/code.html
 - https://golang.org/doc/effective_go.html
