@@ -79,11 +79,10 @@ How many goroutines are there in this example?   *2*
 - Fast create/destroy.
 - Switching manipulates 3 registers.
 - Picking a goroutine is in constant time.
-- Non-terminated goroutines represent a memory leak.
 
 * Closures and goroutines
 
-Variables are an implicit way for goroutines to communicate
+Variables are shared memory. 
 
 	func main() {
 		for j := 0; j<N; j++ {
