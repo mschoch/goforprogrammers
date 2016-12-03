@@ -1,0 +1,475 @@
+Go Concurrency
+101
+
+
+Srdjan Marinovic
+Engineering, Wireless Registry
+@a_little_srdjan
+
+* Outline
+
+The goal is to introduce the core semantics behind Go's concurrency primitives. 
+
+1. Goroutines and channels
+
+2. Locks and WaitGroups
+
+3. Dive into Wireless Registry codebase:
+
+- workerpool
+- non-blocking cache
+
+* Goroutine
+
+- An (abstract) independent thread of control
+- Not visible to the OS thread scheduler
+- Go implements its own scheduler
+- Scheduler runs as many OS threads as there are cores
+- *Summary*: Go has an *M-to-N* threading model
+
+* Instantiating
+
+Syntax: 
+		
+		go func_invocation
+
+* Instantiating
+
+	func main() {
+		int j = 0
+
+		go print(j++)
+	}
+
+	func print(int i) {…}
+
+* Instantiating
+
+	func main() {
+		int j = 0
+
+		go func(int i) {
+			i++ // i = 1
+			print(i)
+		}(j)
+	}
+
+	func print(int i) {…}
+
+How many goroutines are there in this example?
+
+* Instantiating
+
+	func main() {
+		int j = 0
+
+		go func(int i) {
+			i++ // i = 1
+			print(i)
+		}(j)
+	}
+
+	func print(int i) {…}
+
+How many goroutines are there in this example?   *2*
+
+* A few more details
+
+- On launch a routine occupies 2kb of stack space. (Allocated on the heap.)
+- Fast create/destroy.
+- Switching manipulates 3 registers.
+- Picking a goroutine is in constant time.
+- Non-terminated goroutines represent a memory leak.
+
+* Closures and goroutines
+
+Variables are an implicit way for goroutines to communicate
+
+	func main() {
+		for j := 0; j<N; j++ {
+			go func() {
+				print(j)
+			}()
+		}
+	}
+
+	func print(int i) {…}
+
+What are some possible traces of the print invocation?
+
+* Closures and goroutines
+
+	func main() {
+		for j := 0; j<N; j++ {
+			go func() {
+				print(j)
+			}()
+		}
+	}
+
+	func print(int i) {…}
+
+Possible trace: print(N),..., print(N)
+
+* Closures and goroutines
+
+Pass values explicitly
+
+	func main() {
+		for j := 0; j<N; j++ {
+			go func(int i) {
+				print(i)
+			}(j)
+		}
+	}
+
+	func print(int i) {…}
+
+Not possible: ...print(M)...print(M)...
+
+* 
+Do not communicate by sharing memory; instead, share memory by communicating.
+
+- Go Mantra
+
+* Channel
+
+- Synchronization primitive
+- Communication primitive
+- Declaration:
+
+	var chanName chan T
+	var chanName chan int
+	var chanName chan *MyStruct
+	var chanName chan chan T
+	var chanName chan chan chan T
+
+* Channel semantics
+
+- 0-length buffer channel is a synchronization barrier
+- pass-by-value communication
+- Channel reader and writer must both be at the barrier to exchange the value
+
+* Channel semantics
+
+	func main() {
+		var c chan int
+		c := make(chan int)
+		go p(c)
+		go q(c)
+		s_0()
+	}
+	func q(c chan int) {
+		s_1()
+		c <- 5 // write
+		s_2()
+	}
+	func p(c chan int) {
+		s_3()
+		j := <- c // read
+		s_4(j)
+	}
+
+Guaranteed trace property: (s_1 < s_4) && (s_3 < s_2)
+Possible trace: s_1 * s_3 * s_4 * s_2 * s_0
+
+* Channel semantics
+
+	func main() {
+		var c chan int
+		c := make(chan int)
+		go p(c)
+		go q(c)
+		s_0()
+	}
+	func q(c chan int) {
+		s_1()
+		c <- 5
+		s_2()
+	}
+	func p(c chan int) {
+		s_3()
+		j := <- c
+		s_4(j)
+	}
+
+Possible trace: s_3 * s_1 * s_2 * s_4 * s_0
+
+* Channel semantics
+
+N-length buffer channels have relaxed synchronization semantics
+
+- Reader will block if the channel is empty.
+- Writer will block if the channel is full.
+
+* Channel Semantics
+
+	func main() {
+		var c chan int
+		c := make(chan int, 1)
+		go p(c)
+		go q(c)
+		s_0()
+
+		len(c) // Note: len gives the number of elements in the buffer
+	}
+	func q(c chan int) {
+		s_1()
+		c <- 5
+		s_2()
+	}
+	func p(c chan int) {
+		s_3()
+		j := <- c
+		s_4(j)
+	}
+
+Guaranteed trace property: (s_1 < s_4)
+Possible trace: s_1 * s_2 * s_3 * s_4 * s_0
+
+* Channel semantics
+
+Additional important details:
+
+- Reader and writer will block on nil channels.
+- Writer will panic if writing to a closed channel.
+- Reader will read “zero” value from a closed channel.
+
+* Channel semantics
+
+	func q(c chan int) {
+		c = nil
+		c <- 5 // blocks forever
+	}
+
+	func p(c chan int) {
+		close(c)
+		c <- 5 // panic
+	}
+
+	func q(c chan int) {
+		close(c)
+		i, ok := <-c
+		if !ok {
+			// channel was closed
+			// i == 0
+		} 
+	}
+
+* Select expression
+
+`select` non-deterministically picks between ready channel operations.
+If nothing is available, then the default is picked.
+
+	func p(m chan int, n chan int) {
+		select{
+		case <-m:
+			do()
+		case n<-6:
+			do2()
+		default:
+			do3()
+	}
+
+This is arguably one of the most used expressions in Go.
+
+* Channel patterns
+
+Reading from a channel until it is closed using `range`:
+
+	func q(c chan int) {
+		for i := range c {
+			do_something_with(i)
+		}
+	}
+
+The loop is terminated when c gets closed
+
+* Channel patterns
+
+`for-select` is one of the most useful patterns in Go for writing server-like behaviour
+
+	func q(m chan int, n chan int) {
+		for {
+			select{
+			case r := <-m:
+				handle_m_request(r)
+			case r := <-n:
+				handle_n_request(r)
+			}
+		}
+	}
+
+* Channel patterns
+
+Non-blocking fan-out 
+
+	func q(in chan int, out []chan int) {
+		go func() {
+			for i := range in {
+				for o := range out {
+					o <- i
+				}
+			}
+		}()
+	}
+
+Note: we do not close `out` channels. See `WaitGroup` later.
+
+* Channel patterns
+
+Non-blocking fan-in
+
+	func q(in []chan int, out chan int) {
+		go func() {
+			for i := range in {
+				go func(s chan int) {
+					for input := range s {
+						out <- input
+					}
+				}(i)
+			}
+		}()
+	}
+
+Note: we do not close `out`. See `WaitGroup` later.
+
+* Channel patterns
+
+Dynamically growing buffers
+
+	func q(in chan int, out chan int) {
+		go func() {
+			buffer := NewBuffer()
+			out_ready := nil
+
+			for{
+				select{
+				case n := <-in:
+					buffer.Push(n)
+					out_ready = out
+
+				case out_ready := <- buffer.Pop():
+					if buffer.Empty() {
+						out_ready = nil
+					}
+				}
+			}
+		}()
+	}
+
+Note: Buffer is an ADT that implements a queue.
+
+* Other concurrency primitives?
+
+- Channels are not the fastest mechanism for mutual exclusion.
+- Channels can be an overkill, especially for well-known locking patterns.
+
+* Standard Locks
+
+	import "sync"
+
+	type t struct{
+		mu sync.Mutex
+		i int
+	}
+
+	func (s *t) inc() {
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		i++
+	}
+
+* Read/Write Locks
+
+	import "sync"
+
+	type t struct{
+		mu sync.RWMutex
+		i int
+	}
+
+	func (s *t) inc() {
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		s.i++
+	}
+
+	func (s *t) read() int {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+		return s.i
+	}
+
+In general, the locking patterns from other languages apply in Go.
+
+
+* WaitGroup
+
+A barrier to ensure that all the work is done.
+
+	import "sync"
+
+	func fn(){
+		var wg sync.WaitGroup
+
+		for i:=0; i<10; i++ {
+			wg.Add(1)
+			go func() {
+				// work
+				wg.Done()
+			}
+		}
+
+		wg.Wait()
+		//all routines are guaranteed to have finished at this point
+	}
+
+* WaitGroup
+
+Beware: the usual locking traps apply here as well!
+
+	import "sync"
+
+	func fn(){
+		var wg sync.WaitGroup
+
+		for i:=0; i<10; i++ {
+			go func() {
+				wg.Add(1)
+				// work
+				wg.Done()
+			}
+		}
+
+		wg.Wait()
+		//all routines are *not* guaranteed to have finished at this point
+	}
+
+
+* What has not been covered?
+
+- `sync/atomic`
+- `sync.Once`
+- Scalability of goroutines
+- Dynamic select statements with reflection
+- Timeouts
+
+* Are channels and goroutines powerful concurrency primitives/abstractions?
+
+* Consider Simplest Pi Calculus
+
+.image pisyntax.png _ 1100
+
+- You can map goroutines and channels to these primitives. 
+
+- Pi is one of the most used formalisms for describing concurrent patterns/computations.
+
+* What about actors?
+
+Go's concurrency primitives are different, but not more powerful, abstractions than the ones in the Actor Model (Scala, Erlang).
+
+* Let's have a look at some of our code
+
+- Simple workerpool
+- Non-blocking cache
