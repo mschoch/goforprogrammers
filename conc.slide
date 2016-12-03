@@ -251,6 +251,7 @@ Additional important details:
 		close(c)
 		i, ok := <-c
 		if !ok {
+			// this block is executed
 			// channel was closed
 			// i == 0
 		} 
@@ -272,6 +273,26 @@ If nothing is available, then the default is picked.
 	}
 
 This is arguably one of the most used expressions in Go.
+
+* Non-terminated goroutines leak memory
+
+GC does not collect blocked goroutines. Make sure that goroutines have well defined termination mechanisms.
+E.g.:
+- Use `close(ch)` to kill readers
+- Use _cancellation_ signals:
+
+	doneCh := make(chan struct{}, 1)
+	doneCh <- struct{}{}
+	...
+	
+	go func() {
+		select{
+			case <- doneCh:
+				terminationWork()
+			case item := <-readCh:
+				do_work()
+		}
+	}()
 
 * Channel patterns
 
