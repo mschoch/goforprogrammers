@@ -1,0 +1,48 @@
+Go for Programmers
+Introduction to Go
+
+
+
+
+
+* Why
+
+* Company Adoption
+
+Several companies in the area are adopting Go
+
+- Wireless Registry
+- Couchbase
+- Cap1
+- Endgame
+- Decipher
+
+* Operational Tools
+
+Some very popular tools are written in Go.
+
+- Docker
+- Kubernetes
+
+Microservices are cool. Teams have ownership over the development
+and deloyment of services.
+
+* Outline
+
+* Requirements
+
+- Go installed
+
+* Audience
+
+- Has experience with some programming language
+- Is familiar with variables and the ideas of types
+- Is familiar with basic collections such as arrays and maps
+
+* Goals
+
+- Learn how Go programs are organized
+- Learn how Go thinks about variables and types
+- Learn how to write idiomatic Go to interact with data
+- Learn how Go thinks about concurrency
+
