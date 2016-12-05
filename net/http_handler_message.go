@@ -18,7 +18,7 @@ func (m *MessageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.Handle("/message", &MessageHandler{Message: "Hello World"})
+	http.Handle("/message", &MessageHandler{Message: "Hello World"}) // HL
 	log.Fatal(http.ListenAndServe(":8082", nil))
 }
 

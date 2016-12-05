@@ -14,14 +14,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	proverbs, err := loadProverbs(f)
+	proverbs, err := loadProverbs(f) // HL
 	if err != nil {
 		log.Fatal(err)
 	}
 	// END 1OMIT
 
 	proverbsHandler := NewProverbHandler(proverbs)
-	http.Handle("/proverb", proverbsHandler)
+	http.Handle("/proverb", proverbsHandler) // HL
 	log.Fatal(http.ListenAndServe(":8888", nil))
 	// END 2OMIT
 }

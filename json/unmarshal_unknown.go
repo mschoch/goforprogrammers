@@ -16,8 +16,8 @@ func main() {
     }
   `)
 
-	var parsedJSON map[string]interface{}
-	err := json.Unmarshal(jsonBytes, &parsedJSON)
+	var parsedJSON map[string]interface{}         // HL
+	err := json.Unmarshal(jsonBytes, &parsedJSON) // HL
 	if err != nil {
 		log.Fatal(err)
 	}

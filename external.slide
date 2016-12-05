@@ -242,6 +242,9 @@ Launch this outside present...
 - Use the "flags" package to make path to proverbs file configurable
 - Add a config file to configure a timeout
 - Use http.TimeoutHandler to timeout requests
+- Add support for TLS (including HTTP 2)
+- Add an HTTP Handler to define a new Proverb
+- Put in code to throttle number of goroutines?
 
 * Finding More Packages
 

@@ -8,7 +8,7 @@ import (
 
 func main() {
 	// START OMIT
-	resp, err := http.Get("http://localhost:8083/message")
+	resp, err := http.Get("http://localhost:8083/message") // HL
 	if err != nil {
 		log.Fatal(err)
 	}

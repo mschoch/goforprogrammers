@@ -16,12 +16,12 @@ func handleConnection(conn net.Conn) {
 }
 
 func main() {
-	ln, err := net.Listen("tcp", ":8080")
+	ln, err := net.Listen("tcp", ":8080") // HL
 	if err != nil {
 		log.Fatal(err)
 	}
 	for {
-		conn, err := ln.Accept()
+		conn, err := ln.Accept() // HL
 		if err != nil {
 			log.Fatal(err)
 		}

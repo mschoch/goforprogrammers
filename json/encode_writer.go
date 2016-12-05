@@ -18,7 +18,7 @@ func main() {
 		Followers: 139,
 		Active:    true,
 	}
-	f, err := os.Create("json/output.json")
+	f, err := os.Create("json/output.json") // HL
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -28,8 +28,8 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
-	encoder := json.NewEncoder(f)
-	err = encoder.Encode(person)
+	encoder := json.NewEncoder(f) // HL
+	err = encoder.Encode(person)  // HL
 	if err != nil {
 		log.Fatal(err)
 	}

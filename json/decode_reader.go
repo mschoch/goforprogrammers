@@ -15,7 +15,7 @@ func main() {
 		Active    bool   `json:"active"`
 	}
 	var person Person
-	f, err := os.Open("json/sample.json")
+	f, err := os.Open("json/sample.json") // HL
 	if err != nil {
 		log.Fatal(err)
 	}

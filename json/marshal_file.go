@@ -18,11 +18,11 @@ func main() {
 		Followers: 139,
 		Active:    true,
 	}
-	jsonBytes, err := json.Marshal(person)
+	jsonBytes, err := json.Marshal(person) // HL
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = ioutil.WriteFile("json/output.json", jsonBytes, 0777)
+	err = ioutil.WriteFile("json/output.json", jsonBytes, 0777) // HL
 	if err != nil {
 		log.Fatal(err)
 	}

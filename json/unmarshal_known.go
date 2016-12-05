@@ -20,8 +20,8 @@ func main() {
 		Followers int    `json:"followers"`
 		Active    bool   `json:"active"`
 	}
-	var person Person
-	err := json.Unmarshal(jsonBytes, &person)
+	var person Person                         // HL
+	err := json.Unmarshal(jsonBytes, &person) // HL
 	if err != nil {
 		log.Fatal(err)
 	}

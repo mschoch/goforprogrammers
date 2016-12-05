@@ -15,11 +15,11 @@ func main() {
 		Active    bool   `json:"active"`
 	}
 	var person Person
-	data, err := ioutil.ReadFile("json/sample.json")
+	data, err := ioutil.ReadFile("json/sample.json") // HL
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = json.Unmarshal(data, &person)
+	err = json.Unmarshal(data, &person) // HL
 	if err != nil {
 		log.Fatal(err)
 	}
